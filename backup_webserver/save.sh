@@ -9,10 +9,14 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FILE="${ROOT}/$(basename "${BASH_SOURCE[0]}")"
 BASE="$(basename ${FILE} .sh)"
 
+echo "Import config"
+
 source ${ROOT}/config.conf
 
 ##################################
 # Create local working directory and collect all data
+echo "Create working directory"
+
 rm -rf ${WORKING_DIR}
 mkdir ${WORKING_DIR}
 cd ${WORKING_DIR}
@@ -20,6 +24,7 @@ cd ${WORKING_DIR}
 # Backup Database
 if [ "${BACKUP_DB}" ]
 then
+    echo "Backup DB"
     mkdir ${WORKING_DIR}/databases
     for engine in ${DB_ENGINE[*]}
     do
@@ -46,12 +51,14 @@ then
     done
 fi
 
+echo "Backup folders"
 # Backup folders
 mkdir ${WORKING_DIR}/folders
 for backup_folder in ${FOLDERS_TO_BACKUP[*]}
 do
     for folder in $(find ${backup_folder} -mindepth 1 -maxdepth 1 -type d)
     do
+            echo ${folder}
             cd $(dirname ${folder})
             tar cJf ${WORKING_DIR}/folders/$(basename ${folder}).tar.xz $(basename ${folder})
             cd - > /dev/null
