@@ -64,7 +64,8 @@ do
 done
 echo "Backup folders: done"
 CURRENT_DATE=$(date +%F)
-tar czf /tmp/$(hostname)_${CURRENT_DATE}.tar.xz ${WORKING_DIR}
+cd ${WORKING_DIR}
+tar czf /tmp/$(hostname)_${CURRENT_DATE}.tar.xz .
 echo "Backup Archive created"
 # # Create base backup folder
 # [ -z "$(megals --reload /Root/backup_${SERVER})" ] && megamkdir /Root/backup_${SERVER}
