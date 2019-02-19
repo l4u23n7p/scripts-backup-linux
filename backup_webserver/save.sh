@@ -22,7 +22,7 @@ mkdir ${WORKING_DIR}
 cd ${WORKING_DIR}
 
 # Backup Database
-if [ "${BACKUP_DB}" = "true"]
+if [ "${BACKUP_DB}" = "true"];
 then
     echo "Backup DB"
     mkdir ${WORKING_DIR}/databases
@@ -57,7 +57,8 @@ mkdir ${WORKING_DIR}/folders
 for backup_folder in ${FOLDERS_TO_BACKUP[*]}
 # /var/www
 do
-    NAME_BCK = mkdir $(${backup_folder} | tr / _)
+    NAME_BCK = $(echo ${backup_folder} | tr / _)
+    mkdir ${NAME_BCK}
     echo ${backup_folder}
     echo ${NAME_BCK}
     tar czf ${NAME_BCK}.tar.xz ${backup_folder}
