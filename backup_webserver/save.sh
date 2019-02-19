@@ -58,10 +58,10 @@ for backup_folder in ${FOLDERS_TO_BACKUP[*]}
 # /var/www
 do
     NAME_BCK = $(echo ${backup_folder} | tr / _)
-    mkdir ${NAME_BCK}
+    mkdir ${$NAME_BCK}
     echo ${backup_folder}
-    echo ${NAME_BCK}
-    tar czf ${NAME_BCK}.tar.xz ${backup_folder}
+    echo ${$NAME_BCK}
+    tar czf ${$NAME_BCK}.tar.xz ${backup_folder}
 done
 
 # # Create base backup folder
