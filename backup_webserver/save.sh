@@ -53,15 +53,14 @@ fi
 
 echo "Backup folders"
 # Backup folders
-mkdir ${WORKING_DIR}/folders
+FOLDERS_BASE="${WORKING_DIR}/folders"
+mkdir ${FOLDERS_BASE}
 for backup_folder in ${FOLDERS_TO_BACKUP[*]}
-# /var/www
 do
     NAME_BCK=$(echo ${backup_folder} | tr / _)
-    mkdir ${NAME_BCK}
     echo ${backup_folder}
     echo ${NAME_BCK}
-    tar czf ${NAME_BCK}.tar.xz ${backup_folder}
+    tar czf ${FOLDERS_BASE}/${NAME_BCK}.tar.xz ${backup_folder}
 done
 
 # # Create base backup folder
