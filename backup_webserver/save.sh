@@ -51,7 +51,7 @@ then
     done
 fi
 
-echo "Backup folders"
+echo "Backup folders: start"
 # Backup folders
 FOLDERS_BASE="${WORKING_DIR}/folders"
 mkdir ${FOLDERS_BASE}
@@ -62,7 +62,10 @@ do
     echo ${NAME_BCK}
     tar czf ${FOLDERS_BASE}/${NAME_BCK}.tar.xz ${backup_folder}
 done
-
+echo "Backup folders: done"
+CURRENT_DATE=$(date +%F)
+tar czf /tmp/$(hostname)_${CURRENT_DATE}.tar.xz ${WORKING_DIR}
+echo "Backup Archive created"
 # # Create base backup folder
 # [ -z "$(megals --reload /Root/backup_${SERVER})" ] && megamkdir /Root/backup_${SERVER}
 
@@ -74,7 +77,6 @@ done
 # done
 
 # # Create remote folder
-# curday=$(date +%F)
 # megamkdir /Root/backup_${SERVER}/${curday} 2> /dev/null
 
 # # Backup now!!!
