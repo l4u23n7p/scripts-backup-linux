@@ -7,7 +7,9 @@ set -o pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FILE="${ROOT}/$(basename "${BASH_SOURCE[0]}")"
-BASE="$(basename ${FILE} .sh)"
+BASE="$(basename ${FILE}.sh)"
+curday=$(date +%F)
+logfile="/var/log/backup_mega_${curday}"
 
 echo "Import config"
 
@@ -15,77 +17,93 @@ source ${ROOT}/config.conf
 
 ##################################
 # Create local working directory and collect all data
-echo "Create working directory"
+echo "Create working directory: ${WORKING_DIR}"
 
 rm -rf ${WORKING_DIR}
 mkdir ${WORKING_DIR}
 cd ${WORKING_DIR}
 
 # Backup Database
-if [ "${BACKUP_DB}" ]
+if [ "${BACKUP_DB}" = "true" ]
 then
     echo "Backup DB"
     mkdir ${WORKING_DIR}/databases
-    for engine in ${DB_ENGINE[*]}
+    for engine in ${DB_ENGINE_TO_BACKUP[*]}
     do
         if test -f "${ROOT}/save.d/${engine}.sh"
         then
             mkdir ${WORKING_DIR}/databases/${engine}
-            case $engine in
-                'mysql')
-                    if [ "${MYSQL_USER:-}" = "" ]
-                    then
-                        MYSQL_USER=${DB_USER}
-                    fi
-                    if [ "${MYSQL_PASSWORD:-}" = "" ]
-                    then
-                        MYSQL_PASSWORD=${DB_PASSWORD}
-                    fi
-                ;;
-                *) echo ${engine} is not supported
-                ;;
-            esac
-            
             source "${ROOT}/save.d/${engine}.sh"
+        else
+            echo ${engine} is not supported
         fi
     done
+    echo "Databases saved succesfully"
 fi
+
+
+# Backup Service configuration
+if [ "${BACKUP_SERVICES}" = "true" ]
+then
+    echo "Backup services"
+    mkdir ${WORKING_DIR}/services
+    for service in ${SERVICES_TO_BACKUP[*]}
+    do
+        echo "processing ${service}"
+        if test -d "/etc/${service}"
+        then
+            cd /etc
+            tar czf ${WORKING_DIR}/services/${service}.tar.gz ./${service}
+        else
+            if test -f "${ROOT}/conf.d/${service}.sh"
+            then
+                source "${ROOT}/save.d/${service}.sh"
+            else
+                echo ${service} is not supported
+            fi
+        fi
+    done
+    echo "Services saved succesfully"
+fi
+
 
 echo "Backup folders"
 # Backup folders
 mkdir ${WORKING_DIR}/folders
 for backup_folder in ${FOLDERS_TO_BACKUP[*]}
 do
-    for folder in $(find ${backup_folder} -mindepth 1 -maxdepth 1 -type d)
-    do
-            echo ${folder}
-            cd $(dirname ${folder})
-            tar cJf ${WORKING_DIR}/folders/$(basename ${folder}).tar.xz $(basename ${folder})
-            cd - > /dev/null
-    done
+    echo "Backup ${backup_folder}"
+    filter_folder=${backup_folder//\//_}
+    cd ${backup_folder}
+    if [ "${ONLY_SUBFOLDERS}" = "true" ]
+    then
+        mkdir ${WORKING_DIR}/folders/${filter_folder}
+        for folder in $(find ${backup_folder} -mindepth 1 -maxdepth 1 -type d)
+        do
+                echo "processing ${folder}"
+                tar czf ${WORKING_DIR}/folders/${filter_folder}/$(basename ${folder}).tar.gz ./$(basename ${folder})
+        done
+    else
+        tar czf ${WORKING_DIR}/folders/${filter_folder}.tar.gz .
+    fi
 done
 
-# # Create base backup folder
-# [ -z "$(megals --reload /Root/backup_${SERVER})" ] && megamkdir /Root/backup_${SERVER}
+echo "Folders saved succesfully"
 
-# # Remove old logs
-# while [ $(megals --reload /Root/backup_${SERVER} | grep -E "/Root/backup_${SERVER}/[0-9]{4}-[0-9]{2}-[0-9]{2}$" | wc -l) -gt ${DAYS_TO_BACKUP} ]
-# do
-#         TO_REMOVE=$(megals --reload /Root/backup_${SERVER} | grep -E "/Root/backup_${SERVER}/[0-9]{4}-[0-9]{2}-[0-9]{2}$" | sort | head -n 1)
-#         megarm ${TO_REMOVE}
-# done
+echo "Create backup archive"
 
-# # Create remote folder
-# curday=$(date +%F)
-# megamkdir /Root/backup_${SERVER}/${curday} 2> /dev/null
+cd ${WORKING_DIR}
+tar czf /tmp/backup_${SERVER}_${curday}.tar.gz .
 
-# # Backup now!!!
-# megasync --reload --no-progress -l ${WORKING_DIR} -r /Root/backup_${SERVER}/${curday} > /dev/null
+echo "Copy latest backup"
+rclone --progress copy /tmp/backup_${SERVER}_${curday}.tar.gz ${REMOTE_NAME}:backup/${SERVER}
 
-# # Kill DBUS session daemon (workaround)
-# kill ${DBUS_SESSION_BUS_PID}
-# rm -f ${DBUS_SESSION_BUS_ADDRESS}
+echo "Remove old backup"
+rclone --dry-run --min-age ${DAYS_TO_BACKUP}d delete ${REMOTE_NAME}:backup/${SERVER}
+rclone --min-age ${DAYS_TO_BACKUP}d --progress delete ${REMOTE_NAME}:backup/${SERVER}
 
-# Clean local environment
-# rm -rf ${WORKING_DIR}
+echo "Clean local environment"
+rm -rf ${WORKING_DIR} /tmp/backup_${SERVER}_${curday}.tar.gz
+
+echo "Backup done"
 exit 0
