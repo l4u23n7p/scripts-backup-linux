@@ -13,7 +13,7 @@ logfile="/var/log/backup_mega_${curday}"
 
 echo "Import config"
 
-source ${ROOT}/config.conf
+source ${ROOT}/save.conf
 
 ##################################
 # Create local working directory and collect all data
