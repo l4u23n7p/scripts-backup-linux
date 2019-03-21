@@ -21,6 +21,8 @@ printf '%s\n\n' "Configure remote"
 
 rclone config
 
+printf '\n\033[41;3m%s\033[0m\n\n' "Don't forget to edit save.conf with the remote name to use"
+
 echo "Do you wish to install cron task?"
 select yn in "Yes" "No"; do
     case $yn in
