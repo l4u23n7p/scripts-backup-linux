@@ -30,10 +30,10 @@ then
     mkdir ${WORKING_DIR}/databases
     for engine in ${DB_ENGINE_TO_BACKUP[*]}
     do
-        if test -f "${ROOT}/save.d/${engine}.sh"
+        if test -f "${ROOT}/save.d/engines/${engine}.sh"
         then
             mkdir ${WORKING_DIR}/databases/${engine}
-            source "${ROOT}/save.d/${engine}.sh"
+            source "${ROOT}/save.d/engines/${engine}.sh"
         else
             echo ${engine} is not supported
         fi
@@ -50,14 +50,14 @@ then
     for service in ${SERVICES_TO_BACKUP[*]}
     do
         echo "processing ${service}"
-        if test -d "/etc/${service}"
+        if test -f "${ROOT}/save.d/services/${service}.sh"
         then
-            cd /etc
-            tar czf ${WORKING_DIR}/services/${service}.tar.gz ./${service}
+            source "${ROOT}/save.d/services/${service}.sh"
         else
-            if test -f "${ROOT}/conf.d/${service}.sh"
+            if test -d "/etc/${service}"
             then
-                source "${ROOT}/save.d/${service}.sh"
+                cd /etc
+                tar czf ${WORKING_DIR}/services/${service}.tar.gz ./${service}
             else
                 echo ${service} is not supported
             fi
