@@ -79,7 +79,7 @@ fi
 echo -e "\nDo you wish to run a backup now ?"
 select yn in "Yes" "No"; do
     case $yn in
-        Yes ) ./save.sh; break;;
+        Yes ) sudo ./save.sh; break;;
         No ) echo -e '\nSkip initial backup\n'; break;;
     esac
 done
