@@ -8,7 +8,7 @@ set -o pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FILE="${ROOT}/$(basename "${BASH_SOURCE[0]}")"
 BASE="$(basename ${FILE}.sh)"
-curday=$(date +%F)
+curday=$(date +${DATE_FORMAT})
 logdate="date -Iseconds"
 
 echo "[$($logdate)] Import config"

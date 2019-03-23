@@ -34,6 +34,7 @@
 - `SERVICES_TO_BACKUP` : (optional) services to backup
 - `FOLDERS_TO_BACKUP` : folders to backup
 - `ONLY_SUBFOLDERS` : backup only subfolders of each folders
+- `DATE_FORMAT` : format of the date append at the end of the backup filename (use `FORMAT` option of `date` command)
 - `DB_USER` : (optional) default username to use to connect to an database engine
 - `DB_PASSWORD` : (optional) default password to use to connect to an database engine
 - `{engine}_USER` : (optional) username to use to connect to {engine}
