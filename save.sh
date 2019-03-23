@@ -8,25 +8,31 @@ set -o pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FILE="${ROOT}/$(basename "${BASH_SOURCE[0]}")"
 BASE="$(basename ${FILE}.sh)"
-curday=$(date +${DATE_FORMAT})
-logdate="date -Iseconds"
+LOGDATE="date -Iseconds"
 
-echo "[$($logdate)] Import config"
+echo "[$($LOGDATE)] Import config"
 
 source ${ROOT}/save.conf
 
+curday=$(date +${DATE_FORMAT})
+
 ##################################
 # Create local working directory and collect all data
-echo "[$($logdate)] Create working directory: ${WORKING_DIR}"
+##################################
+
+echo "[$($LOGDATE)] Create working directory: ${WORKING_DIR}"
 
 rm -rf ${WORKING_DIR}
 mkdir ${WORKING_DIR}
 cd ${WORKING_DIR}
 
+##################################
 # Backup Database
+##################################
+
 if [ "${BACKUP_DB}" = "true" ]
 then
-    echo "[$($logdate)] Backup DB"
+    echo "[$($LOGDATE)] Backup DB"
     mkdir ${WORKING_DIR}/databases
     for engine in ${DB_ENGINE_TO_BACKUP[*]}
     do
@@ -35,21 +41,24 @@ then
             mkdir ${WORKING_DIR}/databases/${engine}
             source "${ROOT}/save.d/engines/${engine}.sh"
         else
-            echo "[$($logdate)] ${engine} is not supported"
+            echo "[$($LOGDATE)] ${engine} is not supported"
         fi
     done
-    echo "[$($logdate)] Databases saved succesfully"
+    echo "[$($LOGDATE)] Databases saved succesfully"
 fi
 
 
+##################################
 # Backup Service configuration
+##################################
+
 if [ "${BACKUP_SERVICES}" = "true" ]
 then
-    echo "[$($logdate)] Backup services"
+    echo "[$($LOGDATE)] Backup services"
     mkdir ${WORKING_DIR}/services
     for service in ${SERVICES_TO_BACKUP[*]}
     do
-        echo "[$($logdate)] processing ${service}"
+        echo "[$($LOGDATE)] processing ${service}"
         if test -f "${ROOT}/save.d/services/${service}.sh"
         then
             source "${ROOT}/save.d/services/${service}.sh"
@@ -59,20 +68,22 @@ then
                 cd /etc
                 tar czf ${WORKING_DIR}/services/${service}.tar.gz ./${service}
             else
-                echo "[$($logdate)] ${service} is not supported"
+                echo "[$($LOGDATE)] ${service} is not supported"
             fi
         fi
     done
-    echo "[$($logdate)] Services saved succesfully"
+    echo "[$($LOGDATE)] Services saved succesfully"
 fi
 
-
-echo "[$($logdate)] Backup folders"
+##################################
 # Backup folders
+##################################
+
+echo "[$($LOGDATE)] Backup folders"
 mkdir ${WORKING_DIR}/folders
 for backup_folder in ${FOLDERS_TO_BACKUP[*]}
 do
-    echo "[$($logdate)] Backup ${backup_folder}"
+    echo "[$($LOGDATE)] Backup ${backup_folder}"
     filter_folder=${backup_folder//\//_}
     cd ${backup_folder}
     if [ "${ONLY_SUBFOLDERS}" = "true" ]
@@ -80,7 +91,7 @@ do
         mkdir ${WORKING_DIR}/folders/${filter_folder}
         for folder in $(find ${backup_folder} -mindepth 1 -maxdepth 1 -type d)
         do
-                echo "[$($logdate)] processing ${folder}"
+                echo "[$($LOGDATE)] processing ${folder}"
                 tar czf ${WORKING_DIR}/folders/${filter_folder}/$(basename ${folder}).tar.gz ./$(basename ${folder})
         done
     else
@@ -88,23 +99,31 @@ do
     fi
 done
 
-echo "[$($logdate)] Folders saved succesfully"
+echo "[$($LOGDATE)] Folders saved succesfully"
 
-echo "[$($logdate)] Create backup archive"
+##################################
+# Send the backup to remote
+##################################
+
+echo "[$($LOGDATE)] Create backup archive"
 
 cd ${WORKING_DIR}
 tar czf /tmp/backup_${SERVER}_${curday}.tar.gz .
 
-echo "[$($logdate)] Copy latest backup"
+echo "[$($LOGDATE)] Copy latest backup"
 rclone --progress copy /tmp/backup_${SERVER}_${curday}.tar.gz ${REMOTE_NAME}:backup/${SERVER}
 
-echo "[$($logdate)] Remove old backup"
+##################################
+# Clean useless files
+##################################
+
+echo "[$($LOGDATE)] Remove old backup"
 rclone --dry-run --min-age ${DAYS_TO_BACKUP}d delete ${REMOTE_NAME}:backup/${SERVER}
 rclone --min-age ${DAYS_TO_BACKUP}d --progress delete ${REMOTE_NAME}:backup/${SERVER}
 
-echo "[$($logdate)] Clean local environment"
+echo "[$($LOGDATE)] Clean local environment"
 rm -rf ${WORKING_DIR} /tmp/backup_${SERVER}_${curday}.tar.gz
 
-echo "[$($logdate)] Backup done"
+echo "[$($LOGDATE)] Backup done"
 
 exit 0
