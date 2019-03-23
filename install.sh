@@ -22,6 +22,21 @@ sudo rclone config
 
 printf '\n\033[41;3m%s\033[0m\n\n' "Don't forget to edit save.conf with the remote name to use"
 
+if test -f /etc/logrotate.conf
+then
+    printf '%s\n' "Configure logrotate"
+
+    if test -f /etc/logrotate.d/backup
+    then
+        printf '%s\n\n' 'Logrotate configuration already exist'
+    else
+        sudo bash -c "echo -e '${LOGFILE} {\n\tdaily\n\tmissingok\n\trotate 14\n\tcompress\n\tnotifempty\n\tcreate 640\n\tdateext\n}' > /etc/logrotate.d/backup"
+        printf '%s\n\n' 'Logrotate configured'
+    fi
+else
+    printf '%s\n\n' "Logrotate not install"
+fi
+
 echo "Do you wish to install cron task?"
 select yn in "Yes" "No"; do
     case $yn in
