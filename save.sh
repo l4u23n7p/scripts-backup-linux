@@ -102,6 +102,21 @@ done
 echo "[$($LOGDATE)] Folders saved succesfully"
 
 ##################################
+# Backup files
+##################################
+
+echo "[$($LOGDATE)] Backup files"
+mkdir ${WORKING_DIR}/files
+for backup_file in ${FILES_TO_BACKUP[*]}
+do
+    echo "[$($LOGDATE)] Backup ${backup_file}"
+    filter_file=${backup_file//\//_}
+    cp ${backup_file} ${WORKING_DIR}/files/${filter_file}
+done
+
+echo "[$($LOGDATE)] Files saved succesfully"
+
+##################################
 # Send the backup to remote
 ##################################
 
