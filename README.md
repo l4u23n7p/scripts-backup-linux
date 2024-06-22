@@ -35,6 +35,7 @@
 - `FOLDERS_TO_BACKUP` : folders to backup
 - `FILES_TO_BACKUP` : files to backup
 - `ONLY_SUBFOLDERS` : backup only subfolders of each folders
+- `VOLUMES_TO_BACKUP` : docker volumes to backup (set `docker` in `SERVICES_TO_BACKUP`)
 - `DATE_FORMAT` : format of the date append at the end of the backup filename (use `FORMAT` option of `date` command)
 - `DB_USER` : (optional) default username to use to connect to an database engine
 - `DB_PASSWORD` : (optional) default password to use to connect to an database engine
@@ -45,6 +46,6 @@
 
 You can add your own script to backup specific database engines or services.
 
-- Save your script in `save.d\engines\` to add custom engine
+- Save your script in `save.d\engines\` to add custom database engine
 
 - Save your script in `save.d\services\` to add custom service
