@@ -26,6 +26,7 @@
 
 - `SERVER` : server name
 - `REMOTE_NAME` : remote connection to use to store backup
+- `REMOTE_PATH`: path on remote to store backup
 - `DAYS_TO_BACKUP` : numbers of days to keep
 - `WORKING_DIR` : workspace where temporary files are store
 - `BACKUP_DB` : whether or not to backup databases

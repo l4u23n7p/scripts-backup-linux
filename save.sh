@@ -118,15 +118,15 @@ if [[ ! -v SKIP_REMOTE ]]; then
     # Send the backup to remote
     ##################################
     echo "[$($LOGDATE)] Copy latest backup"
-    rclone --progress copy /tmp/backup_${SERVER}_${curday}.tar.gz ${REMOTE_NAME}:backup/${SERVER}
+    rclone --progress copy /tmp/backup_${SERVER}_${curday}.tar.gz ${REMOTE_NAME}:${REMOTE_PATH}
 
     ##################################
     # Clean useless files
     ##################################
 
     echo "[$($LOGDATE)] Remove old backup"
-    rclone --dry-run --min-age ${DAYS_TO_BACKUP}d delete ${REMOTE_NAME}:backup/${SERVER}
-    rclone --min-age ${DAYS_TO_BACKUP}d --progress delete ${REMOTE_NAME}:backup/${SERVER}
+    rclone --dry-run --min-age ${DAYS_TO_BACKUP}d delete ${REMOTE_NAME}:${REMOTE_PATH}
+    rclone --min-age ${DAYS_TO_BACKUP}d --progress delete ${REMOTE_NAME}:${REMOTE_PATH}
 fi
 
 echo "[$($LOGDATE)] Clean local environment"
