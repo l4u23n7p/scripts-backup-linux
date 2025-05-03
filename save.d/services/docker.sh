@@ -25,6 +25,10 @@ cmd_export() {
     echo "[$($LOGDATE)] Successfully tar'ed volume $VOLUME_NAME into file $FILE_NAME"
 }
 
+echo "[$($LOGDATE)] Backup docker daemon"
+cd /etc
+tar czf ${WORKING_DIR}/services/${service}.tar.gz ./${service}
+
 echo "[$($LOGDATE)] Backup docker volumes"
 mkdir ${WORKING_DIR}/volumes
 for volume in ${VOLUMES_TO_BACKUP[*]}; do
